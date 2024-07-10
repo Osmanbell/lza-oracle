@@ -6,19 +6,21 @@ This setup helps solve scenarios where traffic inspection is required between Or
 
 ## Note
 
-Although we refer to this as a "local NVA," it is closer to a simple Linux VM with IP forwarding enabled, and not intended to be an enterprise-scale Firewall NVA.
+Although we use the term "local NVA," this node is a Linux VM with IP forwarding enabled, and not intended to be an enterprise-scale Firewall NVA.
 
-## 1. Create a Linux VM in Azure
+## 1. Create a Linux VM in Azure as an NVA
 
-- **Set up a Linux VM** in the desired resource group and region using the Azure portal or CLI.
-- **Ensure the VM is in the same VNet, but separate subnet, as the Oracle Database**.
+- **Set up a Linux VM** (can be any of the supported distributions on Azure) in the desired resource group and region using the Azure portal or CLI.
+- **Ensure the VM is in the same Virtual Network, but separate subnet, as the Oracle Database**.
 
 ## 2. Enable IP Forwarding on the VM's NIC
 
-- Go to the **Networking** section of the VM.
+- Go to the **Networking** section of the NVA VM.
 - Select the **Network Interface**.
 - Under **Settings**, choose **IP configurations**.
 - Enable **IP forwarding**.
+- Run the following command 'systemctl -p' to reset the network status to forward network traffic without a reboot
+- Ensure that the local firewall on the NVA is not enabled or set to block traffic
 
 ## 3. Enable IP Forwarding at the OS Level
 
