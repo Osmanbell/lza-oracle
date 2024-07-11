@@ -25,10 +25,9 @@ Although we use the term "local NVA," this node is a Linux VM with IP forwarding
 ## 3. Enable IP Forwarding at the OS Level
 
 - SSH into the VM.
-- Edit the sysctl configuration to enable IP forwarding:
-  - sudo nano /etc/sysctl.conf
-  - Add or uncomment the line:
-    - net.ipv4.ip_forward = 1
+- Run the following commands to enable IP forwarding:
+  - sudo sysctl -w net.ipv4.ip_forward=1
+  - sudo sysctl --system
 - Apply the changes
 
 ## 4. Configure Route Tables
