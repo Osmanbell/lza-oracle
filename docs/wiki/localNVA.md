@@ -26,9 +26,9 @@ Although we use the term "local NVA," this node is a Linux VM with IP forwarding
 - Run the following commands to enable IP forwarding:
   - sudo sysctl -w net.ipv4.ip_forward=1
   - sudo sysctl --system
-- Apply the changes
-- Run the following command 'systemctl -p' to reset the network status to forward network traffic without a reboot
-- Ensure that the local firewall on the NVA is not enabled or set to block traffic
+- Apply the changes.
+- Run the following command 'systemctl -p' to reset the network status to forward network traffic without a reboot.
+- Ensure that the local firewall on the NVA is not enabled or set to block traffic.
 
 ## 4. Configure Route Tables
 
