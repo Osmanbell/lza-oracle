@@ -15,13 +15,6 @@ Although we use the term "local NVA," this node is a Linux VM with IP forwarding
 
 ### Note
 
-Sizing is very much driven by the actual traffic pattern. Consider how much traffic (volume), packets per second, etc., are involved. Starting with a 2-core general-purpose VM (such as a D series, e.g. ## 1. Create a Linux VM in Azure as an NVA
-
-- **Set up a Linux VM** (can be any of the supported distributions on Azure) in the desired resource group and region using the Azure portal or CLI.
-- **Ensure the VM is in the same Virtual Network, but separate subnet, as the Oracle Database**.
-
-### Note
-
 Sizing is very much driven by the actual traffic pattern. Consider how much traffic (volume), packets per second, etc., are involved. Starting with a 2-core general-purpose VM (such as a `D2s_v5` with 2 vCPUs and 8 GiB memory) may be used to gauge initial performance. High storage/IOPS performance SKUs are not necessary for this use case.
 
 ## 2. Enable IP Forwarding on the VM's NIC
