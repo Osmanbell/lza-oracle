@@ -32,7 +32,7 @@ Sizing is very much driven by the actual traffic pattern. Consider how much traf
   - sudo sysctl --system
 - Apply the changes.
 - Run the following command to reset the network status to forward network traffic without a reboot:
-  - systemctl -p
+  - sudo sysctl -p
 - Ensure that the local firewall on the NVA is not enabled or set to block traffic.
 
 ## 4. Configure Route Tables
