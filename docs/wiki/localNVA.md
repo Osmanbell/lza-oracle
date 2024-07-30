@@ -27,10 +27,11 @@ Sizing is very much driven by the actual traffic pattern. Consider how much traf
 ## 3. Enable IP Forwarding at the OS Level
 
 - SSH into the VM.
-- Run the following commands to enable IP forwarding:
-  - sudo sysctl -w net.ipv4.ip_forward=1
-  - sudo sysctl --system
-- Apply the changes.
+- Edit the sysctl configuration to enable IP forwarding:
+  - sudo nano /etc/sysctl.conf
+  - Add or uncomment the line:
+    - net.ipv4.ip_forward = 1
+- Apply the changes
 - Run the following command to reset the network status to forward network traffic without a reboot:
   - sudo sysctl -p
 - Ensure that the local firewall on the NVA is not enabled or set to block traffic.
