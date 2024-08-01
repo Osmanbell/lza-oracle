@@ -28,12 +28,15 @@ Sizing is very much driven by the actual traffic pattern. Consider how much traf
 
 - SSH into the VM.
 - Edit the sysctl configuration to enable IP forwarding:
-  - sudo nano /etc/sysctl.conf
+  - `sudo nano /etc/sysctl.conf`
   - Add or uncomment the line:
-    - net.ipv4.ip_forward = 1
+    - `net.ipv4.ip_forward = 1`
 - Apply the changes
 - Run the following command to reset the network status to forward network traffic without a reboot:
-  - sudo sysctl -p
+  - `sudo sysctl -p`
+- Configure `iptables` to accept established and related connections and to forward traffic:
+  - `sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT`
+  - `sudo iptables -A FORWARD -j ACCEPT`
 - Ensure that the local firewall on the NVA is not enabled or set to block traffic.
 
 ## 4. Configure Route Tables
@@ -52,3 +55,50 @@ Sizing is very much driven by the actual traffic pattern. Consider how much traf
 4. **Configure route tables** to use the NVA as the first hop for traffic to and from the Oracle Database subnet.
 
 This setup ensures that all traffic to and from the Oracle Database goes through your local NVA.
+
+## Example Lab: Hub-Spoke Environment
+
+### Environment Overview
+
+- **Hub VNet (10.0.0.0/16)**
+
+  - Hub NVA: 10.0.0.4
+
+- **Spoke 1 VNet - Application Tier (10.1.0.0/16)**
+
+  - Application Server: 10.1.0.4
+
+- **Spoke 2 VNet - Oracle DB (10.2.0.0/16)**
+  - Oracle DB Subnet: 10.2.0.0/24
+  - Oracle Database: 10.2.0.4
+  - Local NVA Subnet: 10.2.1.0/24
+  - Local NVA: 10.2.1.4
+
+### Route Configuration
+
+#### Application Tier VNet (Spoke 1)
+
+1. **Route to Hub NVA:**
+   - Destination: 10.2.0.0/24 (Oracle DB Subnet)
+   - Next Hop: 10.0.0.4 (Hub NVA)
+   - Attach to Client/Application Subnet
+
+#### Hub VNet
+
+1. **Route to Local NVA:**
+   - Destination: 10.2.0.0/24 (Oracle Subnet)
+   - Next Hop: 10.2.1.4 (Local NVA)
+   - Attached to Hub NVA Subnet
+
+#### Oracle DB VNet (Spoke 2)
+
+1. **Route to Local NVA:**
+
+   - Destination: 10.1.0.0/16 (Application Tier VNet)
+   - Next Hop: 10.2.1.4 (Local NVA)
+   - Attach to Oracle DB Subnet
+
+2. **Route from Local NVA to Application Tier VNet:**
+   - Destination: 10.1.0.0/16 (Application Tier VNet)
+   - Next Hop: 10.0.0.4 (Hub NVA)
+   - Attach to Local NVA Subnet
