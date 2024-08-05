@@ -34,9 +34,6 @@ Sizing is very much driven by the actual traffic pattern. Consider how much traf
 - Apply the changes
 - Run the following command to reset the network status to forward network traffic without a reboot:
   - `sudo sysctl -p`
-- Configure `iptables` to accept established and related connections and to forward traffic:
-  - `sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT`
-  - `sudo iptables -A FORWARD -j ACCEPT`
 - Ensure that the local firewall on the NVA is not enabled or set to block traffic.
 
 ## 4. Configure Route Tables
