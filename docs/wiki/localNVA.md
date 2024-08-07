@@ -21,7 +21,6 @@ Sizing is very much driven by the actual traffic pattern. Consider how much traf
 
 - Go to the **Networking** section of the NVA VM.
 - Select the **Network Interface**.
-- Under **Settings**, choose **IP configurations**.
 - Enable **IP forwarding**.
 
 ## 3. Enable IP Forwarding at the OS Level
