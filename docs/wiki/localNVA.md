@@ -74,27 +74,27 @@ This setup ensures that all traffic to and from the Oracle Database goes through
 
 #### Application Tier VNet (Spoke 1)
 
-1. **Route to Hub NVA:**
+1. **Route to Hub NVA**:
    - Destination: 10.2.0.0/24 (Oracle DB Subnet)
    - Next Hop: 10.0.0.4 (Hub NVA)
    - Attach to Client/Application Subnet
 
 #### Hub VNet
 
-1. **Route to Local NVA:**
-   - Destination: 10.2.0.0/24 (Oracle Subnet)
+1. **Route to Oracle DB via Local NVA**:
+   - Destination: 10.2.0.0/24 (Oracle DB Subnet)
    - Next Hop: 10.2.1.4 (Local NVA)
-   - Attached to Hub NVA Subnet
+   - Attach to Hub NVA Subnet
 
 #### Oracle DB VNet (Spoke 2)
 
-1. **Route to Local NVA:**
+1. **Route to Application Tier via Local NVA**:
 
    - Destination: 10.1.0.0/16 (Application Tier VNet)
    - Next Hop: 10.2.1.4 (Local NVA)
    - Attach to Oracle DB Subnet
 
-2. **Route from Local NVA to Application Tier VNet:**
+2. **Route from Local NVA to Application Tier via Hub NVA**:
    - Destination: 10.1.0.0/16 (Application Tier VNet)
    - Next Hop: 10.0.0.4 (Hub NVA)
    - Attach to Local NVA Subnet
