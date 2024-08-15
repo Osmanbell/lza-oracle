@@ -4,18 +4,16 @@
 
 This setup helps solve scenarios where traffic inspection is required between Oracle Database on Azure and other resources. It is also useful for specific scenarios where native support is not available, such as with private endpoints or some services with delegated subnets.
 
-## Note
-
-Although we use the term "local NVA," this node is a Linux VM with IP forwarding enabled, and not intended to be an enterprise-scale Firewall NVA.
+> **Note**  
+> Although we use the term "local NVA," this node is a Linux VM with IP forwarding enabled, and not intended to be an enterprise-scale Firewall NVA.
 
 ## 1. Create a Linux VM in Azure as an NVA
 
-- **Set up a Linux VM** (can be any of the supported distributions on Azure) in the desired resource group and region using the Azure portal or CLI.
+- **Set up a Linux VM** in the desired resource group and region using the Azure portal or CLI. This guide uses Oracle Linux (version 8.8), but you can use any supported Linux distribution on Azure. Be aware that some commands or paths might differ depending on the distribution you choose.
 - **Ensure the VM is in the same Virtual Network, but separate subnet, as the Oracle Database**.
 
-### Note
-
-Sizing is very much driven by the actual traffic pattern. Consider how much traffic (volume), packets per second, etc., are involved. Starting with a 2-core general-purpose VM (such as a `D2s_v5` with 2 vCPUs and 8 GiB memory) may be used to gauge initial performance. High storage/IOPS performance SKUs are not necessary for this use case.
+> **Note**  
+> Sizing is very much driven by the actual traffic pattern. Consider how much traffic (volume), packets per second, etc., are involved. Starting with a 2-core general-purpose VM (such as a `D2s_v5` with 2 vCPUs and 8 GiB memory) may be used to gauge initial performance. High storage/IOPS performance SKUs are not necessary for this use case.
 
 ## 2. Enable IP Forwarding on the VM's NIC
 
@@ -27,28 +25,54 @@ Sizing is very much driven by the actual traffic pattern. Consider how much traf
 
 - SSH into the VM.
 - Edit the sysctl configuration to enable IP forwarding:
-  - `sudo nano /etc/sysctl.conf`
+  ```bash
+  sudo nano /etc/sysctl.conf
+  ```
   - Add or uncomment the line:
     - `net.ipv4.ip_forward = 1`
 - Apply the changes
 - Run the following command to reset the network status to forward network traffic without a reboot:
-  - `sudo sysctl -p`
-- Ensure that the local firewall on the NVA is not enabled or set to block traffic.
+
+  ```bash
+  sudo sysctl -p
+  ```
+
+- Disable the Firewall on the Local NVA if enabled:
+  ```bash
+  sudo systemctl status firewalld
+  sudo systemctl stop firewalld
+  sudo systemctl disable firewalld
+  ```
 
 ## 4. Configure Route Tables
 
-- **Create a route table** in the Azure portal.
-- **Add routes** to the route table:
-  - **To Oracle Database Subnet**: Set the next hop to the local NVA VM.
-  - **From Oracle Database Subnet**: Set the next hop to the local NVA VM.
-- **Associate the route table** with the appropriate subnets.
+You need to create and configure route tables for each VNet involved, with different configurations depending on whether VNets are directly peered or connected via a hub/spoke model.
+
+- **Create or modify a route table** for each VNet involved:
+
+  - **For directly peered VNets**:
+
+    - **In the Application Tier VNet**:
+      - Add a route for traffic destined to the Oracle DB subnet, setting the next hop to the local NVA VM in the Oracle DB VNet.
+    - **In the Oracle DB VNet**:
+      - Add a route for traffic destined to the Application Tier VNet, setting the next hop to the local NVA VM in the Oracle DB VNet.
+
+  - **For VNets connected via a hub/spoke model**:
+    - **In the Hub VNet**:
+      - Add routes for traffic destined to the Oracle DB subnet, setting the next hop to the local NVA VM in the Oracle DB VNet.
+    - **In the Application Tier VNet**:
+      - Add a route for traffic destined to the Oracle DB subnet, setting the next hop to the Hub NVA in the Hub VNet. (This may already be in place.)
+    - **In the Oracle DB VNet**:
+      - On the Oracle DB subnet, add a route for traffic destined to the Application Tier VNet, setting the next hop to the local NVA VM.
+      - On the local NVA subnet, add a route for traffic destined to the Application Tier VNet, setting the next hop to the Hub NVA in the Hub VNet.
 
 ## Summary of Steps
 
 1. **Create Linux VM** in Azure in the same VNet as the Oracle Database.
 2. **Enable IP forwarding** on the VM's NIC.
 3. **Enable IP forwarding** on the Linux VM at the OS level.
-4. **Configure route tables** to use the NVA as the first hop for traffic to and from the Oracle Database subnet.
+4. **Disable the firewall** on the local NVA if enabled
+5. **Configure route tables** to use the NVA as the first hop for traffic to and from the Oracle Database subnet.
 
 This setup ensures that all traffic to and from the Oracle Database goes through your local NVA.
 
@@ -75,7 +99,7 @@ This setup ensures that all traffic to and from the Oracle Database goes through
 #### Application Tier VNet (Spoke 1)
 
 1. **Route to Hub NVA**:
-   - Destination: 10.2.0.0/24 (Oracle DB Subnet)
+   - Destination: 0.0.0.0/0 (All traffic)
    - Next Hop: 10.0.0.4 (Hub NVA)
    - Attach to Client/Application Subnet
 
@@ -95,6 +119,6 @@ This setup ensures that all traffic to and from the Oracle Database goes through
    - Attach to Oracle DB Subnet
 
 2. **Route from Local NVA to Application Tier via Hub NVA**:
-   - Destination: 10.1.0.0/16 (Application Tier VNet)
+   - Destination: 0.0.0.0/0 (All traffic)
    - Next Hop: 10.0.0.4 (Hub NVA)
    - Attach to Local NVA Subnet
