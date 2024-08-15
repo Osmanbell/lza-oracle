@@ -37,14 +37,15 @@ This setup helps solve scenarios where traffic inspection is required between Or
   sudo sysctl -p
   ```
 
-- Disable the Firewall on the Local NVA if enabled:
-  ```bash
-  sudo systemctl status firewalld
-  sudo systemctl stop firewalld
-  sudo systemctl disable firewalld
-  ```
+## 4. Disable the Firewall on the Local NVA if enabled
 
-## 4. Configure Route Tables
+```bash
+sudo systemctl status firewalld
+sudo systemctl stop firewalld
+sudo systemctl disable firewalld
+```
+
+## 5. Configure Route Tables
 
 You need to create and configure route tables for each VNet involved, with different configurations depending on whether VNets are directly peered or connected via a hub/spoke model.
 
@@ -70,7 +71,7 @@ You need to create and configure route tables for each VNet involved, with diffe
 
 1. **Create Linux VM** in Azure in the same VNet as the Oracle Database.
 2. **Enable IP forwarding** on the VM's NIC.
-3. **Enable IP forwarding** on the Linux VM at the OS level.
+3. **Enable IP forwarding** on the Linux VM at the OS level and disable the firewall
 4. **Disable the firewall** on the local NVA if enabled
 5. **Configure route tables** to use the NVA as the first hop for traffic to and from the Oracle Database subnet.
 
