@@ -66,6 +66,12 @@ You need to create and configure route tables for each VNet involved, with diffe
     - **In the Oracle DB VNet**:
       - On the Oracle DB subnet, add a route for traffic destined to the Application Tier VNet, setting the next hop to the local NVA VM.
       - On the local NVA subnet, add a route for traffic destined to the Application Tier VNet, setting the next hop to the Hub NVA in the Hub VNet.
+     
+## Optional Enable SNAT on the Local NVA
+
+```bash
+sudo iptables -t nat -A POSTROUTING -j MASQUERADE
+```
 
 ## Summary of Steps
 
@@ -74,6 +80,7 @@ You need to create and configure route tables for each VNet involved, with diffe
 3. **Enable IP forwarding** on the Linux VM at the OS level and disable the firewall
 4. **Disable the firewall** on the local NVA if enabled
 5. **Configure route tables** to use the NVA as the first hop for traffic to and from the Oracle Database subnet.
+6. **Optional Enable SNAT** to forward packets from the local NVA to the firewall
 
 This setup ensures that all traffic to and from the Oracle Database goes through your local NVA.
 
