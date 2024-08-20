@@ -66,8 +66,10 @@ You need to create and configure route tables for each VNet involved, with diffe
     - **In the Oracle DB VNet**:
       - On the Oracle DB subnet, add a route for traffic destined to the Application Tier VNet, setting the next hop to the local NVA VM.
       - On the local NVA subnet, add a route for traffic destined to the Application Tier VNet, setting the next hop to the Hub NVA in the Hub VNet.
-     
-## Optional Enable SNAT on the Local NVA
+
+## 6. Optional: Enable SNAT on the Local NVA
+
+In some scenarios, you might need to enable Source Network Address Translation (SNAT) on the Local NVA. If your environment or a specific use case requires this, you can enable SNAT using the following command:
 
 ```bash
 sudo iptables -t nat -A POSTROUTING -j MASQUERADE
