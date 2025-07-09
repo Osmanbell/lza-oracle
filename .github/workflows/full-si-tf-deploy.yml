@@ -278,7 +278,7 @@ jobs:
         run: |
           cat > inventory <<EOF
           [dbservers]
-          ${{env.VM_Public_IP_Address}} ansible_ssh_private_key_file=/home/runner/.ssh/github_actions_id_rsa ansible_user=oracle
+          ${{env.VM_Primary_IP_Address}} ansible_ssh_private_key_file=/home/runner/.ssh/github_actions_id_rsa ansible_user=oracle ansible_python_interpreter=/usr/bin/python3
           EOF
 
       - name: 🗒️ Show the inventory file
