@@ -19,10 +19,11 @@ on:
 env:
   #TF_LOG: "INFO"
   AZ_LOCATION: "swedencentral" # can be parameterized
-  AZ_RG_BASENAME: "Oracle-test" # can be parameterized
+  AZ_RG_BASENAME: "Oracle-test33" # can be parameterized
   ORCL_DB_NAME: "ORCL" # can be parameterized
   SOFTWARE_RG: "binaryresource"
   USER_ASSIGNED_IDENTITY: "oraclelza"
+  ResourceGroupName: "Oracle-test33" 
 
 permissions:
   id-token: write
@@ -75,11 +76,11 @@ jobs:
         echo "currentDate=${{env.currentDate}}"
 
       # Generate random string for suffix
-    - name: 🔎 Generate Random String for Resource Group Name
-      id: resourcegroup-generator
-      run: echo random=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 8; echo) >> $GITHUB_ENV
-    - run: echo ResourceGroupName=${{env.AZ_RG_BASENAME}}-${{env.random}} >> $GITHUB_ENV 
-    - run: echo ${{env.ResourceGroupName}}
+    # - name: 🔎 Generate Random String for Resource Group Name
+    #   id: resourcegroup-generator
+    #   run: echo random=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 8; echo) >> $GITHUB_ENV
+    # - run: echo ResourceGroupName=${{env.AZ_RG_BASENAME}}-${{env.random}} >> $GITHUB_ENV 
+    # - run: echo ${{env.ResourceGroupName}}
 
     #Login to Azure
     - name: 🔑 Login via Azure CLI
@@ -100,8 +101,19 @@ jobs:
         # In the line "userAssignedId: '<userAssignedId>'" replace <userAssignedId> with the value of the variable USER_ASSIGNED_IDENTITY
         sed -i "s|'<userAssignedId>'|'${{ env.usId }}'|" single_instance/default/single_instance.bicepparam
 
+    - name: 🔍 Check if Resource Group already exists
+      id: check_rg
+      run: |
+        if az group exists --name ${{ env.ResourceGroupName }}; then
+          echo "✅ Resource group '${{ env.ResourceGroupName }}' already exists. Skipping deployment."
+          echo "skip_deploy=true" >> $GITHUB_ENV
+        else
+          echo "⛔ Resource group does not exist. Proceeding with deployment."
+          echo "skip_deploy=false" >> $GITHUB_ENV
+        fi
+
     - name: Deploy infrastructure
-      #if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      #if: github.ref == 'refs/heads/main' && github.event_name == 'push'      
       run: |
         az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         az deployment sub create --location ${{env.AZ_LOCATION}} --name ${{env.ResourceGroupName}} --template-file main.bicep --parameters ./single_instance/default/single_instance.bicepparam --verbose
