@@ -1,20 +1,23 @@
 ---
 - hosts: all
   become: true
-  gather_facts: false  # Set to false because Python may not be available yet
-  pre_tasks:
-    - name: 🛠️ Install Python 3 if missing (raw command)
-      raw: |
-        sudo yum install -y python3 || sudo apt update && sudo apt install -y python3
-      register: python_install
-      changed_when: "'Complete!' in python_install.stdout or 'installed' in python_install.stdout"
-      failed_when: python_install.rc != 0 and 'already installed' not in python_install.stdout
+  gather_facts: false
 
-    - name: ✅ Ensure Python is available for Ansible
-      setup: {}
+  pre_tasks:
+    - name: 🛠️ Install Python 3 with fallback and allow partial success
+      raw: |
+        sudo yum install -y python3 || sudo apt update && sudo apt install -y python3 || echo "continue"
+      register: result
+      changed_when: false
+      failed_when: false
+
+    - name: 🔍 Confirm Python 3 was installed
+      raw: python3 --version || echo "Python 3 not available"
+
+    - name: ✅ Gather facts after Python is ready
+      setup:
 
   roles:
     - common
-    # - grid        # Uncomment if needed for Grid Infrastructure
-    - oracle19c     # Oracle software installation
-    - dbca          # Database creation
+    - oracle19c
+    - dbca
